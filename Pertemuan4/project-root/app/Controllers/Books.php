@@ -40,7 +40,8 @@ class Books extends BaseController
     public function create()
     {
         $data = [
-            'title' => 'Tambah Data'
+            'title' => 'Tambah Data',
+            'validation' => session()->getFlashdata('validation') ?? \Config\Services::validation()
         ];
 
         return view('/books/create', $data);
@@ -48,6 +49,37 @@ class Books extends BaseController
 
     public function save()
     {
+        //validation input
+        if (!$this->validate([
+            'judul' => [
+                'rules' => 'required|is_unique[books.judul]',
+                'errors' => [
+                    'required' => '{field} buku harus diisi',
+                    'is_unique' => '{field} buku sudah dimasukkan'
+                ]
+            ],
+            'penulis' => [
+                'rules' => 'required[books.penulis]',
+                'errors' => [
+                    'required' => '{field} buku harus diisi',
+                ]
+            ],
+            'penerbit' => [
+                'rules' => 'required[books.penerbit]',
+                'errors' => [
+                    'required' => '{field} buku harus diisi',
+                ]
+            ],
+            'sampul' => [
+                'rules' => 'required[books.sampul]',
+                'errors' => [
+                    'required' => '{field} buku harus diisi',
+                ]
+            ]
+        ])) {
+            session()->setFlashdata('validation', \Config\Services::validation());
+            return redirect()->to('/books/create')->withInput();
+        }
         $slug = url_title($this->request->getVar('judul'), '-', true);
         $this->bukuModel->save([
             'judul' => $this->request->getVar('judul'),
@@ -59,6 +91,15 @@ class Books extends BaseController
         ]);
 
         session()->setFlashdata('pesan', 'Data berhasil ditambahkan');
+
+        return redirect()->to('/books');
+    }
+
+    public function delete($id)
+    {
+        $this->bukuModel->delete($id);
+
+        session()->setFlashdata('pesan', 'Buku berhasil dihapus');
 
         return redirect()->to('/books');
     }

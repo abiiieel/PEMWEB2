@@ -165,7 +165,7 @@ class Books extends BaseController
             'sampul' => $this->request->getVar('sampul'),
         ]);
 
-        session()->getFlashdata('pesan', 'Data berhasil diubah');
+        session()->setFlashdata('pesan', 'Data berhasil diubah');
 
         return redirect()->to('/books');
     }

@@ -71,23 +71,33 @@ class Books extends BaseController
                 ]
             ],
             'sampul' => [
-                'rules' => 'required[books.sampul]',
+                'rules' => 'max_size[sampul,2024]|is_image[sampul]|mime_in[sampul,image/jpg,image/jpeg,image/png]',
                 'errors' => [
-                    'required' => '{field} buku harus diisi',
+                    'max_size' => 'Ukuran file terlalu besar',
+                    'is_image' => 'File yang anda pilih bukan gambar',
+                    'mime_in' => 'File yang anda pilih bukan gambar'
                 ]
             ]
         ])) {
             session()->setFlashdata('validation', \Config\Services::validation());
             return redirect()->to('/books/create')->withInput();
         }
+
+        $gambarSampul = $this->request->getFile('sampul');
+        if ($gambarSampul->getError() == 4) {
+            $namaSampul = 'no-cover.png';
+        } else {
+            $namaSampul = $gambarSampul->getRandomName();
+            $gambarSampul->move('img', $namaSampul);
+        }
+
         $slug = url_title($this->request->getVar('judul'), '-', true);
         $this->bukuModel->save([
             'judul' => $this->request->getVar('judul'),
             'slug' => $slug,
             'penulis' => $this->request->getVar('penulis'),
             'penerbit' => $this->request->getVar('penerbit'),
-            'sampul' => $this->request->getVar('sampul')
-
+            'sampul' => $namaSampul
         ]);
 
         session()->setFlashdata('pesan', 'Data berhasil ditambahkan');
@@ -97,6 +107,10 @@ class Books extends BaseController
 
     public function delete($id)
     {
+        $buku = $this->bukuModel->find($id);
+        if ($buku['sampul'] != 'no-cover.png') {
+            unlink('img/' . $buku['sampul']);
+        }
         $this->bukuModel->delete($id);
 
         session()->setFlashdata('pesan', 'Buku berhasil dihapus');
@@ -145,14 +159,27 @@ class Books extends BaseController
                 ]
             ],
             'sampul' => [
-                'rules' => $rule_judul,
+                'rules' => 'max_size[sampul,2024]|is_image[sampul]|mime_in[sampul,image/jpg,image/jpeg,image/png]',
                 'errors' => [
-                    'required' => '{field} buku harus diisi'
+                    'max_size' => 'Ukuran file terlalu besar',
+                    'is_image' => 'File yang anda pilih bukan gambar',
+                    'mime_in' => 'File yang anda pilih bukan gambar'
                 ]
             ]
         ])) {
             session()->setFlashdata('validation', \Config\Services::validation());
             return redirect()->to('/books/edit/' . $this->request->getVar('slug'))->withInput();
+        }
+
+        $gambarSampul = $this->request->getFile('sampul');
+        if ($gambarSampul->getError() == 4) {
+            $namaSampul = $this->request->getVar('sampulLama');
+        } else {
+            $namaSampul = $gambarSampul->getRandomName();
+            $gambarSampul->move('img', $namaSampul);
+            if ($this->request->getVar('sampulLama') != 'default.png') {
+                unlink('img/' . $this->request->getVar('sampulLama'));
+            }
         }
 
         $slug = url_title($this->request->getVar('judul'), '-', true);
@@ -162,7 +189,7 @@ class Books extends BaseController
             'slug' => $slug,
             'penulis' => $this->request->getVar('penulis'),
             'penerbit' => $this->request->getVar('penerbit'),
-            'sampul' => $this->request->getVar('sampul'),
+            'sampul' => $namaSampul
         ]);
 
         session()->setFlashdata('pesan', 'Data berhasil diubah');

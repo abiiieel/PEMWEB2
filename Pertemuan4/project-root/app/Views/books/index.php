@@ -14,7 +14,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th scope="col">No</th>
+                        <th scope="col">#</th>
                         <th scope="col">Sampul</th>
                         <th scope="col">Judul</th>
                         <th scope="col">Detail</th>

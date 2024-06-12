@@ -22,6 +22,7 @@
                     <a class="nav-link" href="/pages/about">About</a>
                     <a class="nav-link" href="/pages/contact">Contact</a>
                     <a class="nav-link" href="/books">Buku</a>
+                    <a class="nav-link" href="/penulis/">Daftar Penulis</a>
                     <a class="nav-link disabled" aria-disabled="true">disabled</a>
                 </div>
             </div>
